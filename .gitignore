@@ -1,0 +1,4 @@
+settings.json
+data/
+*logs/
+__pycache__/
