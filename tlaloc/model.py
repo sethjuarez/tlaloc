@@ -12,7 +12,7 @@ class StockGRUModel(pl.LightningModule):
                        lr: float = 0.5):
         super().__init__()
 
-        self.to
+        self.save_hyperparameters()
         self.lr = lr
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
@@ -22,11 +22,15 @@ class StockGRUModel(pl.LightningModule):
         
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
-        out, _ = self.gru(x, (h0.detach().to(self.device)))
+        h0 = h0.detach().to(self.device)
+        out, _ = self.gru(x, (h0))
         out = self.fc(out[:, -1, :])
         return out
 
     def _step(self, x: torch.Tensor, y: torch.Tensor):
+        # set input shape
+        if(self.example_input_array == None):
+            self.example_input_array = x
         y_hat = self(x)
         loss = F.mse_loss(y_hat, y, reduction='mean')
         acc = ((y_hat - y) / y).mean()
@@ -43,7 +47,7 @@ class StockGRUModel(pl.LightningModule):
         self.log('val_dev', acc, prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = optim.SGD(self.parameters(), lr=self.lr)
+        optimizer = optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
 
 if __name__ == '__main__':

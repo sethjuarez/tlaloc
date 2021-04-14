@@ -1,4 +1,6 @@
+import torch
 import pandas as pd
+from torch.utils.data import Dataset
 from pathlib import Path
 from datetime import datetime
 
@@ -32,6 +34,16 @@ class Ticker:
             df = pd.read_parquet(str(self.filepath))
 
         self.dataframe = df
+
+class TickerDataset(Dataset):
+    def __init__():
+        pass
+
+    def __getitem__(self, index) -> torch.Tensor:
+        return super().__getitem__(index)
+
+    def __len__() -> int:
+        return 1
 
 if __name__ == '__main__':
     tick = Ticker('../data', 'MSFT')
