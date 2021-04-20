@@ -27,10 +27,12 @@ class StockGRUModel(pl.LightningModule):
         out = self.fc(out[:, -1, :])
         return out
 
+    def predict(self, seq: torch.Tensor, window: int, lookahead: int) -> torch.Tensor:
+        #TODO!
+        pass
+        
+
     def _step(self, x: torch.Tensor, y: torch.Tensor):
-        # set input shape
-        if(self.example_input_array == None):
-            self.example_input_array = x
         y_hat = self(x)
         loss = F.mse_loss(y_hat, y, reduction='mean')
         acc = ((y_hat - y) / y).mean()
@@ -48,7 +50,11 @@ class StockGRUModel(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=self.lr)
-        return optimizer
+        lr_schedule = optim.lr_scheduler.StepLR(optimizer=optimizer, 
+                                                step_size=20, 
+                                                gamma=0.1)
+        return [optimizer], [lr_schedule]
+
 
 if __name__ == '__main__':
     pass

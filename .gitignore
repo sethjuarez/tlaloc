@@ -1,5 +1,4 @@
 settings.json
 data/
-*logs/
-models/
-__pycache__/
+__pycache__
+output/

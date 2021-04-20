@@ -1,7 +1,0 @@
-$schema: https://azuremlsdk2.blob.core.windows.net/latest/asset.schema.json
-# thinking here is that first use is someone uploading data
-# is there a way to tab to each of the necessary settings?
-name: my-data
-version: 1
-local_path: ../data # find a data folder??
-datastore: azureml:rocky # default to workspace storage?
