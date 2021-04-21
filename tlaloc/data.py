@@ -22,7 +22,7 @@ class SeqDataset(Dataset):
 
     def __getitem__(self, i: int) -> Tuple[torch.Tensor, torch.Tensor]:
         e = i + self.win
-        return self.seq[i:e].view((self.win, 1)), self.seq[e:e+1]
+        return self.seq[i:e], self.seq[e:e+1]
 
     @staticmethod
     def scale(sequence: torch.Tensor, min: float, max: float) -> torch.Tensor:
@@ -32,12 +32,13 @@ class SeqDataset(Dataset):
     def inverse_scale(sequence: torch.Tensor, min: float, max: float) -> torch.Tensor:
         return (sequence*(max - min)) + min
 
+
 class StockDataModule(pl.LightningDataModule):
     def __init__(self, data_dir: str = 'data',
                        stock: str = 'MSFT',
-                       lookback: int = 100,
-                       batch_size: int = 512,
-                       train_split: float = .9,
+                       window: int = 100,
+                       batch_size: int = 64,
+                       train_split: float = .80,
                        start: datetime = None, 
                        end: datetime = None):
         super().__init__()
@@ -51,7 +52,7 @@ class StockDataModule(pl.LightningDataModule):
         self.end = end
 
         # training parameters
-        self.lookback = lookback
+        self.window = window
         self.batch_size = batch_size
         self.test_split = 1 - train_split
 
@@ -70,7 +71,7 @@ class StockDataModule(pl.LightningDataModule):
         s = beg if start == None else start
         e = datetime.now() if end == None else end
 
-        filename = f'{stock}_{s.strftime("%y.%m.%d")}_{e.strftime("%y.%m.%d")}.parquet'
+        filename = f'{stock}_{s.strftime("%y.%m.%d")}_{e.strftime("%y.%m.%d")}.csv'
         filepath = Path(data_dir / filename)
 
         df: pd.DataFrame = None
@@ -79,9 +80,9 @@ class StockDataModule(pl.LightningDataModule):
             edate = int((e - beg).total_seconds())
             url = f'{base}/{stock}?period1={sdate}&period2={edate}&{post}'
             df = pd.read_csv(url, parse_dates=True)
-            return df.to_parquet(str(filepath))
+            return df.to_csv(str(filepath))
         else:
-            return pd.read_parquet(str(filepath))
+            return pd.read_csv(str(filepath))
 
     def prepare_data(self):
         # will download if it's not there
@@ -94,19 +95,23 @@ class StockDataModule(pl.LightningDataModule):
 
         test_sz = math.floor(self.test_split * len(data_all))
 
-        train_data = torch.FloatTensor(data_all[:-test_sz]).view(-1)
-        val_data = torch.FloatTensor(data_all[-test_sz:]).view(-1)
+        train_data = torch.FloatTensor(data_all) #[:-test_sz])
+        val_data = torch.FloatTensor(data_all[-test_sz:])
 
-        # Min/Max Scaling from Training Data
-        cmin, cmax = train_data.min(), train_data.max()
-        self.scaler = { "min": float(cmin), "max": float(cmax) }
+        # Min/Max Scaling
+        cmin, cmax = data_all.min(), data_all.max()
+        self.metadata = { 
+            "min": float(cmin), 
+            "max": float(cmax), 
+            "window": self.window 
+        }
 
         # create sequence datasets (scaled)
         self.train_dataset = SeqDataset(SeqDataset.scale(train_data, cmin, cmax), 
-                                                self.lookback)
+                                                self.window)
 
         self.val_dataset = SeqDataset(SeqDataset.scale(val_data, cmin, cmax), 
-                                                self.lookback)
+                                                self.window)
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size)

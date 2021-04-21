@@ -23,7 +23,7 @@ class StockGRUModel(pl.LightningModule):
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).requires_grad_()
         h0 = h0.detach().to(self.device)
-        out, _ = self.gru(x, (h0))
+        out, _ = self.gru(x.view(-1, x.size(1), 1), (h0))
         out = self.fc(out[:, -1, :])
         return out
 
@@ -35,23 +35,23 @@ class StockGRUModel(pl.LightningModule):
     def _step(self, x: torch.Tensor, y: torch.Tensor):
         y_hat = self(x)
         loss = F.mse_loss(y_hat, y, reduction='mean')
-        acc = ((y_hat - y) / y).mean()
-        return loss, acc
+        dev = ((y_hat - y) / y).mean()
+        return loss, dev
 
     def training_step(self, batch, batch_idx):
-        loss, acc = self._step(*batch)
-        self.log('dev', acc, prog_bar=True)
+        loss, dev = self._step(*batch)
+        self.log('dev', dev, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, acc = self._step(*batch)
+        loss, dev = self._step(*batch)
         self.log('val_loss', loss, prog_bar=True)
-        self.log('val_dev', acc, prog_bar=True)
+        self.log('val_dev', dev, prog_bar=True)
 
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters(), lr=self.lr)
         lr_schedule = optim.lr_scheduler.StepLR(optimizer=optimizer, 
-                                                step_size=20, 
+                                                step_size=10, 
                                                 gamma=0.1)
         return [optimizer], [lr_schedule]
 
