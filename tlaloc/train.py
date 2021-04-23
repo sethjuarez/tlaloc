@@ -10,6 +10,7 @@ from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 def check_dir(dir: Path, clear=False):
+    StockGRUModel()
     if dir.exists() and clear:
         shutil.rmtree(str(dir))
     if not dir.exists():
@@ -22,10 +23,11 @@ def main(stock='MSFT', data_dir='../data', output_dir='../output'):
     output_dir = Path(output_dir).resolve()
     check_dir(output_dir, clear=True)
 
-    now = datetime.now()
+    end_date = datetime(2021, 1, 20)
+    start_date = datetime(2016, 1, 20)
 
     sdm = StockDataModule(data_dir=str(data_dir), stock=stock, 
-                            start=datetime(now.year - 5, now.month, now.day))
+                          start=start_date, end=end_date)
 
     model = StockGRUModel(lr=0.01)
 

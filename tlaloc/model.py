@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import pytorch_lightning as pl
 import torch.nn.functional as F
+from typing import List, Tuple
 
 class StockGRUModel(pl.LightningModule):
     def __init__(self, input_dim: int = 1, 
@@ -27,12 +28,26 @@ class StockGRUModel(pl.LightningModule):
         out = self.fc(out[:, -1, :])
         return out
 
-    def predict(self, seq: torch.Tensor, window: int, lookahead: int) -> torch.Tensor:
-        #TODO!
-        pass
-        
+    def predict(self, seq: List[float], window: int, lookbehind: int, lookahead: int) -> List[float]:
+        overlap = []
+        predixn = seq[-window:]
+        self.eval()
+        with torch.no_grad():
+            # get lookbehind period (overlap)
+            for i in reversed(range(1, lookbehind+1)):
+                x = torch.FloatTensor(seq[-window-i:-i]).view(1, -1)
+                y = self(x)
+                overlap.append(y.detach().item())
 
-    def _step(self, x: torch.Tensor, y: torch.Tensor):
+            # begin lookahead period (predictions)
+            for i in range(lookahead):
+                x = torch.FloatTensor(predixn[-window:]).view(1, -1)
+                y = self(x)
+                predixn.append(y.detach().item())
+
+        return overlap + predixn[-lookahead:]
+
+    def _step(self, x: torch.Tensor, y: torch.Tensor) -> Tuple[float, float]:
         y_hat = self(x)
         loss = F.mse_loss(y_hat, y, reduction='mean')
         dev = ((y_hat - y) / y).mean()
@@ -54,7 +69,6 @@ class StockGRUModel(pl.LightningModule):
                                                 step_size=10, 
                                                 gamma=0.1)
         return [optimizer], [lr_schedule]
-
 
 if __name__ == '__main__':
     pass
