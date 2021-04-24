@@ -1,0 +1,31 @@
+trainer:
+  gpus: 1
+  default_root_dir: ../output
+  checkpoint_callback: true
+  callbacks:
+    - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+      init_args:
+        monitor: val_loss
+        filename: tlaloc-{epoch:02d}-{val_dev:.4f}
+        save_top_k: 5
+        mode: min
+    - class_path: pytorch_lightning.callbacks.EarlyStopping
+      init_args:
+        monitor: val_loss
+        min_delta: 0
+        patience: 25
+        verbose: false
+        mode: min
+model:
+  input_dim: 1
+  hidden_dim: 32
+  num_layers: 2
+  output_dim: 1
+  lr: 0.5
+data:
+  data_dir: ../data
+  parquet: earnings.parquet
+  resource_id: -1
+  window: 100
+  batch_size: 64
+  train_split: 0.8

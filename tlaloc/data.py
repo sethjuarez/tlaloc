@@ -42,6 +42,7 @@ class EarningsDataModule(pl.LightningDataModule):
 
         # path to dataframe
         self.data_dir = Path(data_dir).resolve()
+        print(f'data_dir: {self.data_dir}')
         self.parquet = self.data_dir / parquet
         self.resource_id = resource_id
 
