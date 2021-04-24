@@ -1,6 +1,6 @@
-from model import StockGRUModel
-from data import SeqDataset, StockDataModule
+from model import EarningsGRUModel
+from data import SeqDataset, EarningsDataModule
 from pytorch_lightning.utilities.cli import LightningCLI
 
 
-LightningCLI(StockGRUModel, StockDataModule)
+LightningCLI(EarningsGRUModel, EarningsDataModule)
