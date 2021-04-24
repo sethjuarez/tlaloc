@@ -1,5 +1,6 @@
 import math
 import torch
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
@@ -26,30 +27,23 @@ class SeqDataset(Dataset):
 
     @staticmethod
     def scale(sequence: torch.Tensor, min: float, max: float) -> torch.Tensor:
-        return (sequence-min)/(max-min)
+        return (sequence - min) / (max - min)
 
     @staticmethod
     def inverse_scale(sequence: torch.Tensor, min: float, max: float) -> torch.Tensor:
         return (sequence*(max - min)) + min
 
 
-class StockDataModule(pl.LightningDataModule):
-    def __init__(self, data_dir: str = 'data',
-                       stock: str = 'MSFT',
-                       window: int = 100,
-                       batch_size: int = 64,
-                       train_split: float = .80,
-                       start: datetime = None, 
-                       end: datetime = None):
+class EarningsDataModule(pl.LightningDataModule):
+    def __init__(self, data_dir: str = 'path/to/data', parquet: str = 'parquet_file', 
+                    resource_id: int = -1, window: int = 100, batch_size: int = 64, 
+                    train_split: float = .80):
         super().__init__()
 
-        # storage
-        self.data_dir = data_dir
-
-        # stock data
-        self.stock = stock
-        self.start = start
-        self.end = end
+        # path to dataframe
+        self.data_dir = Path(data_dir).resolve()
+        self.parquet = self.data_dir / parquet
+        self.resource_id = resource_id
 
         # training parameters
         self.window = window
@@ -57,48 +51,27 @@ class StockDataModule(pl.LightningDataModule):
         self.test_split = 1 - train_split
 
     @staticmethod
-    def get_stock_data(data_dir: str = 'data',
-                       stock: str = 'MSFT',
-                       start: datetime = None, 
-                       end: datetime = None):
+    def load(parquet_file: str = 'path/to/parquet', resource_id: int = -1) -> np.array:
+        # get data
+        df = pd.read_parquet(parquet_file)
 
-        base = 'https://query1.finance.yahoo.com/v7/finance/download'
-        post = 'interval=1d&events=history&includeAdjustedClose=true'
-
-        data_dir = Path(data_dir).resolve()
-
-        beg = datetime(1970, 1, 1)
-        s = beg if start == None else start
-        e = datetime.now() if end == None else end
-
-        filename = f'{stock}_{s.strftime("%y.%m.%d")}_{e.strftime("%y.%m.%d")}.csv'
-        filepath = Path(data_dir / filename)
-
-        df: pd.DataFrame = None
-        if not filepath.exists():
-            sdate = int((s - beg).total_seconds())
-            edate = int((e - beg).total_seconds())
-            url = f'{base}/{stock}?period1={sdate}&period2={edate}&{post}'
-            df = pd.read_csv(url, parse_dates=True)
-            return df.to_csv(str(filepath))
+        # get appropriate data (all aggregate or id)
+        rid, datestr, earnings = 'resource_id', 'date', 'earnings'
+        res_min, res_max = df[rid].min(), df[rid].max()
+        if resource_id >= res_min and resource_id <= res_max:
+            df = df.loc[df[rid] == 1]
         else:
-            return pd.read_csv(str(filepath))
+            df = df.groupby(by=[datestr]).sum()
 
-    def prepare_data(self):
-        # will download if it's not there
-        StockDataModule.get_stock_data(self.data_dir, self.stock, self.start, self.end)
+        df = df.sort_values(by=[datestr])
+        return df[earnings].values
+
 
     def setup(self, stage: Optional[str] = None):
-        # get latest parque file written
-        df = StockDataModule.get_stock_data(self.data_dir, self.stock, self.start, self.end)
-        data_all = df['Close'].values
+        # get data
+        data_all = EarningsDataModule.load(self.parquet)
 
-        test_sz = math.floor(self.test_split * len(data_all))
-
-        train_data = torch.FloatTensor(data_all) #[:-test_sz])
-        val_data = torch.FloatTensor(data_all[-test_sz:])
-
-        # Min/Max Scaling
+        # min/max for scaling
         cmin, cmax = data_all.min(), data_all.max()
         self.metadata = { 
             "min": float(cmin), 
@@ -106,12 +79,17 @@ class StockDataModule(pl.LightningDataModule):
             "window": self.window 
         }
 
-        # create sequence datasets (scaled)
-        self.train_dataset = SeqDataset(SeqDataset.scale(train_data, cmin, cmax), 
-                                                self.window)
+        # scale
+        data_all = SeqDataset.scale(data_all, cmin, cmax)
 
-        self.val_dataset = SeqDataset(SeqDataset.scale(val_data, cmin, cmax), 
-                                                self.window)
+        # data split
+        test_sz = math.floor(self.test_split * len(data_all))
+        train_data = torch.FloatTensor(data_all[:-test_sz])
+        val_data = torch.FloatTensor(data_all[-test_sz:])
+
+        # create sequence datasets
+        self.train_dataset = SeqDataset(train_data, self.window)
+        self.val_dataset = SeqDataset(val_data, self.window)
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size)
@@ -120,14 +98,6 @@ class StockDataModule(pl.LightningDataModule):
         return DataLoader(self.val_dataset, batch_size=self.batch_size)
 
 if __name__ == '__main__':
-    import numpy as np
-    seq = torch.from_numpy(np.array([float(i) for i in range(5)]))
-    print(seq)
-    sdataset = SeqDataset(seq, 3)
-    for i in range(len(sdataset)):
-        print(sdataset[i])
-
-    sdm = StockDataModule(data_dir='../data', stock='MSFT')
-    sdm.prepare_data()
+    sdm = EarningsDataModule(data_dir='../data', parquet='sales.parquet')
     sdm.setup()
-    print(sdm.transform)
+    print(sdm.metadata)

@@ -4,32 +4,27 @@ import torch
 import shutil
 from pathlib import Path
 from datetime import datetime
-from model import StockGRUModel
-from data import StockDataModule
+from model import EarningsGRUModel
+from data import EarningsDataModule
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 def check_dir(dir: Path, clear=False):
-    StockGRUModel()
     if dir.exists() and clear:
         shutil.rmtree(str(dir))
     if not dir.exists():
         os.makedirs(str(dir))
 
-def main(stock='MSFT', data_dir='../data', output_dir='../output'):    
+def main(data_dir='../data', parquet_file='earnings.parquet', output_dir='../output'):
     data_dir = Path(data_dir).resolve()
     check_dir(data_dir)
 
     output_dir = Path(output_dir).resolve()
     check_dir(output_dir, clear=True)
 
-    end_date = datetime(2021, 1, 20)
-    start_date = datetime(2016, 1, 20)
 
-    sdm = StockDataModule(data_dir=str(data_dir), stock=stock, 
-                          start=start_date, end=end_date)
-
-    model = StockGRUModel(lr=0.01)
+    sdm = EarningsDataModule(data_dir=str(data_dir), parquet=parquet_file)
+    model = EarningsGRUModel(lr=0.01)
 
     chkpt_dir = output_dir / 'checkpoints'
     check_dir(chkpt_dir)
@@ -56,13 +51,12 @@ def main(stock='MSFT', data_dir='../data', output_dir='../output'):
     trainer.fit(model, sdm)
     
     # get best checkpoint
-    model = StockGRUModel.load_from_checkpoint(checkpoint_callback.best_model_path)
+    model = EarningsGRUModel.load_from_checkpoint(checkpoint_callback.best_model_path)
     
     model_dir = output_dir / 'models'
     check_dir(model_dir)
 
     model_params = { 
-        'stock': stock, 
         'model': model.hparams, 
         'data': sdm.metadata
     }
@@ -73,4 +67,4 @@ def main(stock='MSFT', data_dir='../data', output_dir='../output'):
     torch.save(model.state_dict(), str(model_dir / 'model.pth'))
     
 if __name__ == '__main__':
-    main(stock='MSFT')
+    main()

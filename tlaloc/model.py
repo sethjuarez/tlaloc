@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 import torch.nn.functional as F
 from typing import List, Tuple
 
-class StockGRUModel(pl.LightningModule):
+class EarningsGRUModel(pl.LightningModule):
     def __init__(self, input_dim: int = 1, 
                        hidden_dim: int = 32,
                        num_layers: int = 2, 
