@@ -1,0 +1,4 @@
+$schema: https://azuremlschemas.azureedge.net/latest/asset.schema.json
+name: earnings-data
+version: 2
+local_path: ../data

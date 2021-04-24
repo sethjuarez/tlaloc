@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "${file}",
             "cwd": "${fileDirname}",
-            "args": ["--config", "config.yml"],
+            "args": ["--config", "config.yaml"],
             "console": "integratedTerminal"
         }
     ]

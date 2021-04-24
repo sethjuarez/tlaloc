@@ -9,9 +9,6 @@ from typing import Optional, Tuple
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
-# consider multiple stocks
-# to perform deep learned 
-# statistical arbitrage
 class SeqDataset(Dataset):
     def __init__(self, sequence: torch.Tensor, window: int) -> None:
         self.sz = len(sequence) - window
