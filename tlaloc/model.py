@@ -10,7 +10,7 @@ class EarningsGRUModel(pl.LightningModule):
                        hidden_dim: int = 32,
                        num_layers: int = 2, 
                        output_dim: int = 1, 
-                       lr: float = 0.5):
+                       lr: float = 0.01):
         super().__init__()
 
         self.save_hyperparameters()

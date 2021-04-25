@@ -81,7 +81,7 @@ class EarningsDataModule(pl.LightningDataModule):
 
         # data split
         test_sz = math.floor(self.test_split * len(data_all))
-        train_data = torch.FloatTensor(data_all) #[:-test_sz])
+        train_data = torch.FloatTensor(data_all[:-test_sz])
         val_data = torch.FloatTensor(data_all[-test_sz:])
 
         # create sequence datasets
