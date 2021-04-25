@@ -57,11 +57,10 @@ class EarningsDataModule(pl.LightningDataModule):
         rid, datestr, earnings = 'resource_id', 'date', 'earnings'
         res_min, res_max = df[rid].min(), df[rid].max()
         if resource_id >= res_min and resource_id <= res_max:
-            df = df.loc[df[rid] == 1]
+            df = df.loc[df[rid] == resource_id]
         else:
             df = df.groupby(by=[datestr]).sum()
 
-        df = df.sort_values(by=[datestr])
         return df[earnings].values
 
 
@@ -82,7 +81,7 @@ class EarningsDataModule(pl.LightningDataModule):
 
         # data split
         test_sz = math.floor(self.test_split * len(data_all))
-        train_data = torch.FloatTensor(data_all[:-test_sz])
+        train_data = torch.FloatTensor(data_all) #[:-test_sz])
         val_data = torch.FloatTensor(data_all[-test_sz:])
 
         # create sequence datasets
@@ -90,12 +89,14 @@ class EarningsDataModule(pl.LightningDataModule):
         self.val_dataset = SeqDataset(val_data, self.window)
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size)
+        bz = self.batch_size if self.batch_size > 0 else len(self.train_dataset)
+        return DataLoader(self.train_dataset, batch_size=bz)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size)
+        bz = self.batch_size if self.batch_size > 0 else len(self.val_dataset)
+        return DataLoader(self.val_dataset, batch_size=bz)
 
 if __name__ == '__main__':
-    sdm = EarningsDataModule(data_dir='../data', parquet='sales.parquet')
+    sdm = EarningsDataModule(data_dir='../data', parquet='earnings.parquet')
     sdm.setup()
     print(sdm.metadata)

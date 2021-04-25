@@ -55,7 +55,8 @@ class EarningsGRUModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss, dev = self._step(*batch)
-        self.log('dev', dev, prog_bar=True)
+        self.log('train_loss', loss)
+        self.log('train_dev', dev, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
