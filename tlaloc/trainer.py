@@ -106,10 +106,12 @@ class EarningsCLI(LightningCLI):
         return str(img_file)
         
     def save_model(self, base_dirs: List[Path], model: EarningsGRUModel, model_params: Dict):
+        input_sample = torch.zeros((1, 100, 1))
         for dirs in base_dirs:
             with open(str(dirs / 'params.json'), 'w') as f:
                 f.write(json.dumps(model_params, indent=4))
             torch.save(model.state_dict(), str(dirs / 'model.pth'))
+            model.to_onnx(dirs / 'model.onnx', input_sample, export_params=True)
 
     def instantiate_trainer(self) -> None:
         # start mlflow autologging
@@ -169,6 +171,7 @@ class EarningsCLI(LightningCLI):
         image_file = self.plot_simulation(val_seq, model, datap['window'], 
                                             datap['min'], datap['max'], 
                                             default_root_dir)
+
         
 
 if __name__ == '__main__':

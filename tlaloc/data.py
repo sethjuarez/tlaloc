@@ -37,6 +37,8 @@ class EarningsDataModule(pl.LightningDataModule):
                     train_split: float = .80):
         super().__init__()
 
+        # TODO: Add worker counts
+
         # path to dataframe
         self.data_dir = Path(data_dir).resolve()
         print(f'data_dir: {self.data_dir}')
@@ -62,7 +64,6 @@ class EarningsDataModule(pl.LightningDataModule):
             df = df.groupby(by=[datestr]).sum()
 
         return df
-
 
     def setup(self, stage: Optional[str] = None):
         # get data
