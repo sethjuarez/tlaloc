@@ -2,14 +2,11 @@ $schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
 experiment_name: earnings-experiment
 code: 
   local_path: ../tlaloc
-command: python trainer.py --config config.yaml --trainer.default_root_dir outputs --data.data_dir {inputs.training_data}
-environment: 
-  conda_file: file:conda_dependencies.yml
-  docker:
-      image: mcr.microsoft.com/azureml/openmpi4.1.0-cuda11.0.3-cudnn8-ubuntu18.04
+command: python trainer.py --config config.yaml --trainer.default_root_dir ./outputs --data.data_dir {inputs.training_data}
+environment: azureml:pytorch-lightning13:7
 compute:
   target: azureml:gandalf
 inputs:
   training_data:
-    data: azureml:earnings-data:1
+    data: azureml:earnings-data:3
     mode: mount

@@ -16,7 +16,7 @@
             "name": "PL: Trainer",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "trainer.py",
             "cwd": "${fileDirname}",
             "args": ["--config", "config.yaml"],
             "console": "integratedTerminal"

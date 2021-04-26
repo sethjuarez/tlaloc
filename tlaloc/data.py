@@ -37,6 +37,8 @@ class EarningsDataModule(pl.LightningDataModule):
                     train_split: float = .80):
         super().__init__()
 
+        # TODO: Add worker counts
+
         # path to dataframe
         self.data_dir = Path(data_dir).resolve()
         print(f'data_dir: {self.data_dir}')
@@ -57,17 +59,16 @@ class EarningsDataModule(pl.LightningDataModule):
         rid, datestr, earnings = 'resource_id', 'date', 'earnings'
         res_min, res_max = df[rid].min(), df[rid].max()
         if resource_id >= res_min and resource_id <= res_max:
-            df = df.loc[df[rid] == 1]
+            df = df.loc[df[rid] == resource_id]
         else:
             df = df.groupby(by=[datestr]).sum()
 
-        df = df.sort_values(by=[datestr])
-        return df[earnings].values
-
+        return df
 
     def setup(self, stage: Optional[str] = None):
         # get data
-        data_all = EarningsDataModule.load(self.parquet)
+        self.dataframe = EarningsDataModule.load(self.parquet)
+        data_all = self.dataframe['earnings'].values
 
         # min/max for scaling
         cmin, cmax = data_all.min(), data_all.max()
@@ -90,12 +91,14 @@ class EarningsDataModule(pl.LightningDataModule):
         self.val_dataset = SeqDataset(val_data, self.window)
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size)
+        bz = self.batch_size if self.batch_size > 0 else len(self.train_dataset)
+        return DataLoader(self.train_dataset, batch_size=bz)
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size)
+        bz = self.batch_size if self.batch_size > 0 else len(self.val_dataset)
+        return DataLoader(self.val_dataset, batch_size=bz)
 
 if __name__ == '__main__':
-    sdm = EarningsDataModule(data_dir='../data', parquet='sales.parquet')
+    sdm = EarningsDataModule(data_dir='../data', parquet='earnings.parquet')
     sdm.setup()
     print(sdm.metadata)

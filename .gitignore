@@ -1,4 +1,5 @@
 settings.json
 data/
 __pycache__
-output/
+outputs/
+mlruns/

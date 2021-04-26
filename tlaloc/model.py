@@ -10,7 +10,7 @@ class EarningsGRUModel(pl.LightningModule):
                        hidden_dim: int = 32,
                        num_layers: int = 2, 
                        output_dim: int = 1, 
-                       lr: float = 0.5):
+                       lr: float = 0.01):
         super().__init__()
 
         self.save_hyperparameters()
@@ -55,7 +55,8 @@ class EarningsGRUModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss, dev = self._step(*batch)
-        self.log('dev', dev, prog_bar=True)
+        self.log('train_loss', loss)
+        self.log('train_dev', dev, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
