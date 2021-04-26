@@ -61,12 +61,13 @@ class EarningsDataModule(pl.LightningDataModule):
         else:
             df = df.groupby(by=[datestr]).sum()
 
-        return df[earnings].values
+        return df
 
 
     def setup(self, stage: Optional[str] = None):
         # get data
-        data_all = EarningsDataModule.load(self.parquet)
+        self.dataframe = EarningsDataModule.load(self.parquet)
+        data_all = self.dataframe['earnings'].values
 
         # min/max for scaling
         cmin, cmax = data_all.min(), data_all.max()

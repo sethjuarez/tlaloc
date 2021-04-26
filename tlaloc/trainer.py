@@ -6,6 +6,7 @@ import torch
 import shutil
 import mlflow
 import warnings
+import pandas as pd
 from PIL import Image
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -46,7 +47,7 @@ class MLFlowAutoLogger(MLFlowLogger):
 
 class EarningsCLI(LightningCLI):
 
-    def run_simulation(self, sequence: torch.Tensor, model: EarningsGRUModel, 
+    def plot_simulation(self, sequence: torch.Tensor, model: EarningsGRUModel, 
                         window: int, emin: float, emax: float, output_dir: Path):
 
         print('Running Simulation...')
@@ -64,7 +65,7 @@ class EarningsCLI(LightningCLI):
         # create indices
         seq_size = sequence.size(0)
         actual_range = [i for i in range(seq_size)]
-        pred_range = [i for i in range(seq_size-behind,seq_size+forward)]
+        pred_range = [i for i in range(seq_size-behind-1,seq_size+forward-1)]
 
         # plot predictions over actuals
         fig, ax = plt.subplots(figsize=(1600/96., 600/96.))
@@ -76,7 +77,27 @@ class EarningsCLI(LightningCLI):
         plt.xlabel('Period')
         plt.ylabel('Earnings')
         
-        img_file = str(output_dir / 'validation_inf_run.png')
+        img_file = str(output_dir / 'validation_data.png')
+        print(f'Saving simulation to {img_file}')
+
+        # save image
+        plt.savefig(img_file, dpi=96)
+
+        return str(img_file)
+
+    def plot_original(self, datamodule: EarningsDataModule(), output_dir: Path):
+        df = pd.read_parquet(datamodule.parquet)
+        fig, ax = plt.subplots(figsize=(1600/96., 600/96.))
+        for key, grp in df.groupby(['resource_id']):
+            ax = grp.plot(ax=ax, kind='line', x='date', y='earnings', label=key)
+
+        ax.yaxis.set_major_formatter(tick.FuncFormatter(lambda x, p: '${:1.0f}K'.format(x/1000.)))
+        leg = ax.legend()
+        plt.title(f'Original Earnings Data')
+        plt.xlabel('Period')
+        plt.ylabel('Earnings')
+        
+        img_file = str(output_dir / 'original_data.png')
         print(f'Saving simulation to {img_file}')
 
         # save image
@@ -140,10 +161,12 @@ class EarningsCLI(LightningCLI):
 
         default_root_dir = check_dir(Path(self.trainer.default_root_dir).resolve())
 
+        # plot original data
+        self.plot_original(self.trainer.datamodule, default_root_dir)
         # plot chart with validation data for run review
         datap = model_params['data']
         val_seq = self.trainer.datamodule.val_dataset.seq
-        image_file = self.run_simulation(val_seq, model, datap['window'], 
+        image_file = self.plot_simulation(val_seq, model, datap['window'], 
                                             datap['min'], datap['max'], 
                                             default_root_dir)
         
