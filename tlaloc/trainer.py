@@ -156,8 +156,8 @@ class EarningsCLI(LightningCLI):
 
         # save model and inference paramters (latest and versioned)
         model_dir = check_dir(output_dir / 'model')
-        model_version_dir = check_dir(model_dir / f'version_{self.tb_version}')
-        self.save_model([model_version_dir, model_dir], model, model_params)
+        #model_version_dir = check_dir(model_dir / f'version_{self.tb_version}')
+        self.save_model([model_dir], model, model_params)
 
         default_root_dir = check_dir(Path(self.trainer.default_root_dir).resolve())
 
