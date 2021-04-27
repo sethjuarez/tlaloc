@@ -156,8 +156,14 @@ class EarningsCLI(LightningCLI):
             'data': self.trainer.datamodule.metadata
         }
 
+        
+
+        #mlflow.register_model()
+
         # save model and inference paramters (latest and versioned)
         model_dir = check_dir(output_dir / 'model')
+
+        #self.mlf_logger.experiment.create_registered_model(str(model_dir))
         #model_version_dir = check_dir(model_dir / f'version_{self.tb_version}')
         self.save_model([model_dir], model, model_params)
 

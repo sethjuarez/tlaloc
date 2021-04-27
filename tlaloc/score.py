@@ -1,3 +1,15 @@
+#############################################
+# temp fix                                  #
+#############################################
+import sys
+from pathlib import Path
+parent_dir = Path(__file__).parent.absolute()
+if str(parent_dir) not in sys.path:
+    sys.path.append(str(parent_dir))
+#############################################
+# end temp fix                              #
+#############################################
+
 import os
 import json
 import time
@@ -5,7 +17,6 @@ import torch
 import logging
 import requests
 import numpy as np
-from pathlib import Path
 from data import SeqDataset
 from model import EarningsGRUModel
 from datetime import datetime, timedelta
@@ -16,17 +27,18 @@ logger = logging.getLogger()
 
 def init():
     global model, meta, logger
-    logger.info('Attempt to load model artifacts')
-    try:
-        from azureml.core.model import Model
-        path = Model.get_model_path('earnings-model-1')
-        logger.info('Loaded model from AML')
-    except:
-        path = '../outputs/model'
-        logger.info('Using Local')
+    logger.info('Attempting to load model artifacts')
 
+    if 'AZUREML_MODEL_DIR' in os.environ:
+        logger.info('using AZUREML_MODEL_DIR')
+        root_dir = Path(os.environ['AZUREML_MODEL_DIR']).resolve() / 'model'
+    else:
+        logger.info('using local')
+        root_dir = Path('../outputs/model').resolve()
+
+    logger.info(f'using model path: {root_dir}')
+    
     logger.info('Resolving artifact paths')
-    root_dir = Path(path).resolve()
     trnsf_path = root_dir / 'params.json'
     model_path = root_dir / 'model.pth'
     logger.info(f'metadata path: {trnsf_path}')
@@ -37,7 +49,7 @@ def init():
         meta = json.load(f)
     logger.info(f'metadata load complete: {json.dumps(meta)}')
 
-    logger.info(f'instantiating mode with params: {json.dumps(meta["model"])}')
+    logger.info(f'instantiating model with params: {json.dumps(meta["model"])}')
     model = EarningsGRUModel(**meta['model'])
     logger.info(f'instantiation complete, loading state dictionary')
     model.load_state_dict(torch.load(model_path))
