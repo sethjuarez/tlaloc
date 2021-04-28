@@ -10,3 +10,4 @@ inputs:
   training_data:
     data: azureml:earnings-data:3
     mode: mount
+    
