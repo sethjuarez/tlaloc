@@ -29,10 +29,8 @@ jobs:
       with:
         creds: ${{secrets.AZURE_TOKEN}}
     - run: |
-          az config set defaults.workspace=${{secrets.AML_ACCOUNT.workspace}}
-          az config set defaults.location=${{secrets.AML_ACCOUNT.location}}
-          az config set defaults.group=${{secrets.AML_ACCOUNT.group}}
-          az account set -s ${{secrets.AML_ACCOUNT.subscription}}
+          az config set defaults.workspace=${{secrets.AML_WORKSPACE}}
+          az config set defaults.group=${{secrets.AML_RG}}
     - run: |
           az ml job create --file ./cloud/job.yaml --name $AML_JOB --stream
 
