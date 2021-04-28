@@ -10,7 +10,7 @@ on:
       - tlaloc/*
       - cloud/*.yml
 jobs:
-  dev-setup:
+  ml-workflow:
     runs-on: ubuntu-latest
     env:
       AML_JOB: earnings_$GITHUB_RUN_ID
