@@ -58,13 +58,15 @@ jobs:
       run: |
         DEPLOYMENTS=$(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
         echo $DEPLOYMENTS
-        if $DEPLOYMENTS == '1'; then
+        if [[ $DEPLOYMENTS -eq '1' ]]
+        then
           MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
           DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
           echo $MODEL_VER
           echo $DEPLOY_NAME
         else
           echo 'NOT SET'
+        fi
 
 
         
