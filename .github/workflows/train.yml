@@ -41,16 +41,13 @@ jobs:
       run: |
           az ml job create --file cloud/job.yaml --name earnings_$GITHUB_RUN_ID --stream
 
-    - name: get outputs
+    - name: model artifacts
       run: |
           az ml job download --name earnings_$GITHUB_RUN_ID --outputs --download-path ./run
-
-    - name: copy model artifacts
-      run: |
-        mkdir model
-        cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.onnx ./model/model.onnx
-        cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.pth ./model/model.pth
-        cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/params.json ./model/params.json
+          mkdir model
+          cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.onnx ./model/model.onnx
+          cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.pth ./model/model.pth
+          cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/params.json ./model/params.json
 
     - name: register model
       run: |
@@ -60,7 +57,7 @@ jobs:
     - name: deploy
       env:
         DEPLOYMENTS: $(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
-      if: ${{ env.DEPLOYMENTS == '1' }}
+      if: ${{ contains(env.DEPLOYMENTS,'1') }}
       run: |
         MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
         DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
