@@ -13,7 +13,7 @@ jobs:
   ml-workflow:
     runs-on: ubuntu-latest
     env:
-      LAST_MODEL_VER: $(az ml model show -n earnings-model --query version | tr -d "\r")
+      AML_JOB: earnings_$GITHUB_RUN_ID
     steps:
     - name: Checkout
       uses: actions/checkout@v2.3.3
@@ -54,7 +54,16 @@ jobs:
 
     - name: register model
       run: |
+        LAST_MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
         az ml model create --name earnings-model --local-path ./model --version $((LAST_MODEL_VER+1))
+
+    - name: deploy
+      run: |
+        DEPLOYMENTS=$(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
+        if [ $(DEPLOYMENTS) = 1 ]; then
+          MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
+          echo "ONLY ONE"_$MODEL_VER
+        fi
 
 
         
