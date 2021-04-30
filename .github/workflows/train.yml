@@ -12,8 +12,6 @@ on:
 jobs:
   ml-workflow:
     runs-on: ubuntu-latest
-    env:
-      AML_JOB: earnings_$GITHUB_RUN_ID
     steps:
     - name: Checkout
       uses: actions/checkout@v2.3.3
@@ -57,14 +55,17 @@ jobs:
         echo $(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
 
     - name: deploy
-      env:
-        DEPLOYMENTS: ${{ (az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r") }}
       run: |
-        echo ${{ env.DEPLOYMENTS }}
-        MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
-        DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
-        echo $MODEL_VER
-        echo $DEPLOY_NAME
+        DEPLOYMENTS=$(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
+        echo $DEPLOYMENTS
+        if ${DEPLOYMENTS}  == 1; then
+          echo ${{ env.DEPLOYMENTS }}
+          MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
+          DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
+          echo $MODEL_VER
+          echo $DEPLOY_NAME
+        else
+          echo 'NOT SET'
 
 
         
