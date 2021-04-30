@@ -53,6 +53,7 @@ jobs:
       run: |
         LAST_MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
         az ml model create --name earnings-model --local-path ./model --version $((LAST_MODEL_VER+1))
+        echo $(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
 
     - name: deploy
       env:
