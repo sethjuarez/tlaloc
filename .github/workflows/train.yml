@@ -62,7 +62,8 @@ jobs:
         DEPLOYMENTS=$(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
         if [ $(DEPLOYMENTS) = 1 ]; then
           MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
-          echo "ONLY ONE"_$MODEL_VER
+          DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
+          echo "ONLY ONE"_$MODEL_VER_$DEPLOY_NAME
         fi
 
 
