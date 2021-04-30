@@ -60,7 +60,7 @@ jobs:
     - name: deploy
       env:
         DEPLOYMENTS: $(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
-      if: ${{ env.DEPLOYMENTS == 1 }}
+      if: ${{ env.DEPLOYMENTS == '1') }}
       run: |
         MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
         DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
