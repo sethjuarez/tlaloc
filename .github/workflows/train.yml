@@ -49,7 +49,8 @@ jobs:
           cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.pth ./model/model.pth
           cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/params.json ./model/params.json
 
-    - name: register model
+    - id: register
+      name: register model
       run: |
         LAST_MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
         az ml model create --name earnings-model --local-path ./model --version $((LAST_MODEL_VER+1))
@@ -57,9 +58,9 @@ jobs:
 
     - name: deploy
       env:
-        DEPLOYMENTS: $(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
-      if: ${{ contains(env.DEPLOYMENTS,'1') }}
+        DEPLOYMENTS: ${{ (az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r") }}
       run: |
+        echo ${{ env.DEPLOYMENTS }}
         MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
         DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
         echo $MODEL_VER
