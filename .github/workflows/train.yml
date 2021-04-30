@@ -54,9 +54,9 @@ jobs:
 
     - name: register model
       run: |
-        model_ver=$((az ml model show -n earnings-model --query version) + 1)
-        az ml model create --name earnings-model --local-path ./model --version $model_ver
-        
+        ver=$(az ml model show -n earnings-model --query version | tr -d "\r")
+        az ml model create --name earnings-model --local-path ./model --version $((ver+1))
+
 
         
 
