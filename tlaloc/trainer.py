@@ -126,7 +126,7 @@ class EarningsCLI(LightningCLI):
 
         # adding additional loggers
         tb_logger = TensorBoardLogger(save_dir=str(default_root_dir), name='logs')
-        self.mlf_logger = MLFlowLogger(experiment_name="earnings-experiment", 
+        self.mlf_logger = MLFlowAutoLogger(experiment_name="earnings-experiment", 
                                         tracking_uri=f"file:{str(default_root_dir / 'mlflow')}")
         
         self.trainer.logger = LoggerCollection([tb_logger, self.mlf_logger])
@@ -156,17 +156,9 @@ class EarningsCLI(LightningCLI):
             'data': self.trainer.datamodule.metadata
         }
 
-        
-
-        #mlflow.register_model()
-
         # save model and inference paramters (latest and versioned)
         model_dir = check_dir(output_dir / 'model')
-
-        #self.mlf_logger.experiment.create_registered_model(str(model_dir))
-        #model_version_dir = check_dir(model_dir / f'version_{self.tb_version}')
         self.save_model([model_dir], model, model_params)
-
         default_root_dir = check_dir(Path(self.trainer.default_root_dir).resolve())
 
         # plot original data
@@ -177,9 +169,7 @@ class EarningsCLI(LightningCLI):
         image_file = self.plot_simulation(val_seq, model, datap['window'], 
                                             datap['min'], datap['max'], 
                                             default_root_dir)
-
-        
-
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     EarningsCLI(EarningsGRUModel, EarningsDataModule)
+    print('All Done!')

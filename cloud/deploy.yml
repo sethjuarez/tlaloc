@@ -7,14 +7,15 @@ traffic:
 deployments:
   #blue deployment
   - name: blue    
-    model: 
-      name: earnings-model
-      version: 1
-      local_path: ../outputs/model
+    app_insights_enabled: true
     code_configuration:
       code: 
         local_path: ../tlaloc
       scoring_script: score.py
+    model: 
+      name: earnings-model
+      version: 1
+      local_path: ../outputs/model
     environment: 
       name: earnings-env
       version: 1

@@ -31,24 +31,33 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{secrets.AZURE_TOKEN}}
+
     - name: set aml defaults
       run: |
           az config set defaults.workspace=${{secrets.AML_WORKSPACE}}
           az config set defaults.group=${{secrets.AML_RG}}
+
     - name: run job
       run: |
           az ml job create --file cloud/job.yaml --name earnings_$GITHUB_RUN_ID --stream
+
     - name: get outputs
       run: |
           az ml job download --name earnings_$GITHUB_RUN_ID --outputs --download-path ./run
+
     - name: copy model artifacts
       run: |
         mkdir model
         cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.onnx ./model/model.onnx
         cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.pth ./model/model.pth
         cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/params.json ./model/params.json
+
     - name: register model
       run: |
-        az ml model create --name earnings-model --local-path ./model
+        model_ver=$((az ml model show -n earnings-model --query version) + 1)
+        az ml model create --name earnings-model --local-path ./model --version $model_ver
+        
+
+        
 
 

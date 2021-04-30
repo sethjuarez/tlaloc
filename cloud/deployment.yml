@@ -1,0 +1,14 @@
+$schema: https://azuremlschemas.azureedge.net/latest/deployment.schema.json
+name: earnings-endpoint
+model: azureml:earnings-model:1
+code_configuration:
+  code: 
+    local_path: ../tlaloc
+  scoring_script: score.py
+environment: azureml:pytorch-lightning-deploy:1
+instance_type: Standard_F4s_v2
+scale_settings:
+  scale_type: manual
+  instance_count: 1
+  min_instances: 1
+  max_instances: 2

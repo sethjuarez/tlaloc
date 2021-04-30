@@ -13,11 +13,8 @@ dependencies:
 - cudatoolkit=11.1
 - nvidia-apex==0.1.0
 - pip:
-  - azureml-core
-  - azureml-defaults
-  - azureml-mlflow
-  - azureml-telemetry
-  - azureml-train-core
+  - pyarrow
+  - fastparquet
   - mlflow
   - pandas
   - pillow
