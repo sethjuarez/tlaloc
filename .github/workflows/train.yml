@@ -60,10 +60,10 @@ jobs:
           sed -i "s/NNNNNNNNNN/earnings-$GITHUB_RUN_ID/g;s/VVVVVVVVVV/$MODEL_VER/g" cloud/deployment.yml
           echo New Deployment Definition:
           cat cloud/deployment.yml
-          echo 
-          echo az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
+          echo ""
+          echo az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "\"$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0\""
           az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
-          echo  
+          echo ""
           echo az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
           az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
         else
