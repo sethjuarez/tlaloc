@@ -35,26 +35,22 @@ jobs:
           az config set defaults.workspace=${{secrets.AML_WORKSPACE}}
           az config set defaults.group=${{secrets.AML_RG}}
 
-    - name: run job
+    - name: 1. Run Job
       run: |
-          az ml job create --file cloud/job.yaml --name earnings_$GITHUB_RUN_ID --stream
+          az ml job create --file cloud/job.yaml --name earnings_$GITHUB_RUN_ID --stream 
 
-    - name: model artifacts
+    - name: 2. Register Model
       run: |
-          az ml job download --name earnings_$GITHUB_RUN_ID --outputs --download-path ./run
-          mkdir model
-          cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.onnx ./model/model.onnx
-          cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.pth ./model/model.pth
-          cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/params.json ./model/params.json
-
-    - id: register
-      name: register model
-      run: |
+        az ml job download --name earnings_$GITHUB_RUN_ID --outputs --download-path ./run
+        mkdir model
+        cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.onnx ./model/model.onnx
+        cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/model.pth ./model/model.pth
+        cp ./run/earnings_$GITHUB_RUN_ID/outputs/model/params.json ./model/params.json
         LAST_MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
         az ml model create --name earnings-model --local-path ./model --version $((LAST_MODEL_VER+1))
         echo $(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
 
-    - name: deploy
+    - name: 3. Add Deployment
       run: |
         DEPLOYMENTS=$(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
         if [[ $DEPLOYMENTS -eq '1' ]]
@@ -62,13 +58,16 @@ jobs:
           MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
           DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
           sed -i "s/NNNNNNNNNN/earnings-$GITHUB_RUN_ID/g;s/VVVVVVVVVV/$MODEL_VER/g" cloud/deployment.yml
+          echo New Deployment Definition:
           cat cloud/deployment.yml
+          echo 
           echo az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
           az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
+          echo  
           echo az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
           az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
         else
-          echo 'NOT SET'
+          echo "Too many deployments to proceed safely!"
         fi
 
 
