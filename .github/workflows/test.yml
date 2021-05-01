@@ -1,4 +1,4 @@
-name: model training
+name: test
 
 on:
   workflow_dispatch:
@@ -44,10 +44,10 @@ jobs:
           DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
           echo $MODEL_VER
           echo $DEPLOY_NAME
-          sed 's/NNNNNNNNNN/earnings_$GITHUB_RUN_ID/g' cloud/deployment.yaml
-          sed 's/VVVVVVVVVV/$MODEL_VER/g' cloud/deployment.yaml
+          sed 's/NNNNNNNNNN/earnings_$GITHUB_RUN_ID/g' cloud/deployment.yml
+          sed 's/VVVVVVVVVV/$MODEL_VER/g' cloud/deployment.yml
           cat cloud/deployment.yaml
-          echo az ml endpoint update --name earnings-endpoint --deployment-file .\cloud\deployment.yml --traffic "$DEPLOY_NAME:100,earnings_$GITHUB_RUN_ID:0"
+          echo az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "$DEPLOY_NAME:100,earnings_$GITHUB_RUN_ID:0"
           echo az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings_$GITHUB_RUN_ID:0"
         else
           echo 'NOT SET'

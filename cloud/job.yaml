@@ -8,5 +8,5 @@ compute:
   target: azureml:gandalf
 inputs:
   training_data:
-    data: azureml:earnings-data:3
+    data: azureml:earnings-data:1
     mode: mount
