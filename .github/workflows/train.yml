@@ -57,7 +57,6 @@ jobs:
     - name: deploy
       run: |
         DEPLOYMENTS=$(az ml endpoint show --name earnings-endpoint --query 'deployments | length(@)' | tr -d "\r")
-        echo $DEPLOYMENTS
         if [[ $DEPLOYMENTS -eq '1' ]]
         then
           MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")

@@ -26,25 +26,6 @@ def check_dir(dir: Path, clear=False):
         os.makedirs(str(dir))
     return dir
 
-class MLFlowAutoLogger(MLFlowLogger):
-    def __init__(self, **kwargs):
-        try:
-            from azureml.core import Run
-            self.run = Run.get_context()
-            ws = run.experiment.workspace
-            super().__init__(experiment_name=self.run.experiment.name, 
-                                tracking_uri=ws.get_mlflow_tracking_uri())
-            print('Using AzureML MLFlow Tracking')
-        except Exception as e:
-            super().__init__(**kwargs)
-            self.run = None
-            print('Using Standard MLFlow Tracking')
-
-    def log_image(self, name, path=None, plot=None, description=''):
-        if self.run != None:
-            self.run.log_image(name, path, plot, description)
-
-
 class EarningsCLI(LightningCLI):
 
     def plot_simulation(self, sequence: torch.Tensor, model: EarningsGRUModel, 
@@ -125,9 +106,10 @@ class EarningsCLI(LightningCLI):
         print(default_root_dir)
 
         # adding additional loggers
+        tracking_uri = f"file:{str(default_root_dir / 'mlruns')}"
         tb_logger = TensorBoardLogger(save_dir=str(default_root_dir), name='logs')
-        self.mlf_logger = MLFlowAutoLogger(experiment_name="earnings-experiment", 
-                                        tracking_uri=f"file:{str(default_root_dir / 'mlflow')}")
+        self.mlf_logger = MLFlowLogger(experiment_name="earnings-experiment", 
+                                        tracking_uri=tracking_uri)
         
         self.trainer.logger = LoggerCollection([tb_logger, self.mlf_logger])
 
@@ -172,4 +154,3 @@ class EarningsCLI(LightningCLI):
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     EarningsCLI(EarningsGRUModel, EarningsDataModule)
-    print('All Done!')

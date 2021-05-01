@@ -1,6 +1,6 @@
-$schema: https://azuremlschemas.azureedge.net/latest/deployment.schema.json
-name: earnings-endpoint
-model: azureml:earnings-model:1
+$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
+name: NNNNNNNNNN
+model: azureml:earnings-model:VVVVVVVVVV
 code_configuration:
   code: 
     local_path: ../tlaloc

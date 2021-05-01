@@ -16,13 +16,7 @@ deployments:
       name: earnings-model
       version: 1
       local_path: ../outputs/model
-    environment: 
-      name: earnings-env
-      version: 1
-      path: .
-      conda_file: file:deploy_conda_deps.yml
-      docker:
-          image: mcr.microsoft.com/azureml/intelmpi2018.3-ubuntu16.04:20210301.v1
+    environment: azureml:pytorch-lightning-deploy:1
     instance_type: Standard_F4s_v2
     scale_settings:
       scale_type: manual
