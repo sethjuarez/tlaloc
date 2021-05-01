@@ -2,13 +2,7 @@ name: test
 
 on:
   workflow_dispatch:
-         
-  push:
-    branches:
-      - main
-    paths:
-      - tlaloc/*
-      - cloud/*.yml
+
 jobs:
   ml-workflow:
     runs-on: ubuntu-latest

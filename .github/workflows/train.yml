@@ -61,8 +61,9 @@ jobs:
         then
           MODEL_VER=$(az ml model show -n earnings-model --query version | tr -d "\r")
           DEPLOY_NAME=$(az ml endpoint show --name earnings-endpoint --query deployments[0].name | tr -d '"')
-          echo $MODEL_VER
-          echo $DEPLOY_NAME
+          sed -i "s/NNNNNNNNNN/earnings_$GITHUB_RUN_ID/g;s/VVVVVVVVVV/$MODEL_VER/g" cloud/deployment.yml
+          az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "$DEPLOY_NAME:100,earnings_$GITHUB_RUN_ID:0"
+          echo az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings_$GITHUB_RUN_ID:0"
         else
           echo 'NOT SET'
         fi
