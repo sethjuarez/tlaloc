@@ -154,4 +154,3 @@ class EarningsCLI(LightningCLI):
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     EarningsCLI(EarningsGRUModel, EarningsDataModule)
-    print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
