@@ -1,6 +1,7 @@
 $schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
 name: NNNNNNNNNN
 model: azureml:earnings-model:VVVVVVVVVV
+app_insights_enabled: true
 code_configuration:
   code: 
     local_path: ../tlaloc
