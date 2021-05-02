@@ -1,4 +1,4 @@
-name: model training
+name: MLOps - Earnings Model
 
 on:
   workflow_dispatch:
