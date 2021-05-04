@@ -23,7 +23,7 @@ jobs:
 
     - name: add az ml extension
       run: |
-        az extension add --source https://azuremlsdktestpypi.blob.core.windows.net/wheels/sdk-cli-v2-public/ml-1.0.0a1-py3-none-any.whl --pip-extra-index-urls https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2-public -y
+        az extension add --source https://azuremlsdktestpypi.blob.core.windows.net/wheels/sdk-cli-v2-public/ml-1.0.0a3-py3-none-any.whl --pip-extra-index-urls https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2-public -y
 
     - name: azure login
       uses: azure/login@v1
