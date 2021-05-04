@@ -64,7 +64,7 @@ jobs:
           echo az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "\"$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0\""
           az ml endpoint update --name earnings-endpoint --deployment-file cloud/deployment.yml --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
           echo ""
-          echo az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
+          echo az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:90,earnings-$GITHUB_RUN_ID:10"
           az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:90,earnings-$GITHUB_RUN_ID:10"
         else
           echo "Too many deployments to proceed safely - will bail out for now."
