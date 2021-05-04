@@ -23,7 +23,7 @@ jobs:
 
     - name: add az ml extension
       run: |
-        az extension add --source https://azuremlsdktestpypi.blob.core.windows.net/wheels/sdk-cli-v2-public/ml-1.0.0a3-py3-none-any.whl --pip-extra-index-urls https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2-public -y
+        az extension add --source https://azuremlsdktestpypi.blob.core.windows.net/wheels/sdk-cli-v2-public/ml-1.0.0a2-py3-none-any.whl --pip-extra-index-urls https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2-public -y
 
     - name: azure login
       uses: azure/login@v1
@@ -67,7 +67,7 @@ jobs:
           echo az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
           az ml endpoint update --name earnings-endpoint --traffic "$DEPLOY_NAME:100,earnings-$GITHUB_RUN_ID:0"
         else
-          echo "Too many deployments to proceed safely!"
+          echo "Too many deployments to proceed safely - will bail out for now."
         fi
 
 
