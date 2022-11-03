@@ -7,3 +7,4 @@ azure/
 logs/
 keys/
 run/
+.venv/

@@ -12,12 +12,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tick
 from model import EarningsGRUModel
-from pytorch_lightning import Trainer
 from typing import List, Dict, Optional, Any
 from data import SeqDataset, EarningsDataModule
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.utilities.cli import LightningCLI, SaveConfigCallback
-from pytorch_lightning.loggers import LoggerCollection, MLFlowLogger, TensorBoardLogger
+from pytorch_lightning.utilities.cli import LightningCLI
 
 def check_dir(dir: Path, clear=False):
     if dir.exists() and clear:
@@ -94,35 +92,6 @@ class EarningsCLI(LightningCLI):
             torch.save(model.state_dict(), str(dirs / 'model.pth'))
             model.to_onnx(dirs / 'model.onnx', input_sample, export_params=True)
 
-    def instantiate_trainer(self) -> None:
-        # start mlflow autologging
-        mlflow.autolog()
-
-        # get trainer going
-        super().instantiate_trainer()
-
-        # get default root log directory
-        default_root_dir = check_dir(Path(self.trainer.default_root_dir).resolve())
-        print(default_root_dir)
-
-        # adding additional loggers
-        tracking_uri = f"file:{str(default_root_dir / 'mlruns')}"
-        tb_logger = TensorBoardLogger(save_dir=str(default_root_dir), name='logs')
-        self.mlf_logger = MLFlowLogger(experiment_name="earnings-experiment", 
-                                        tracking_uri=tracking_uri)
-        
-        self.trainer.logger = LoggerCollection([tb_logger, self.mlf_logger])
-
-        # set versioned directory
-        self.tb_version = tb_logger.version
-        self.tb_log_dir = Path(tb_logger.log_dir).resolve()
-
-        # resetting output directories for callbacks
-        for cb in self.trainer.callbacks:
-            if isinstance(cb, ModelCheckpoint):
-                cb.dirpath = f'{Path(tb_logger.log_dir).resolve() / "checkpoints"}'
-            if isinstance(cb, SaveConfigCallback):
-                cb.config_filename = f'{Path(tb_logger.log_dir).resolve() / "config.yaml"}'
 
     def after_fit(self):
         # output paths
@@ -153,5 +122,6 @@ class EarningsCLI(LightningCLI):
                                             default_root_dir)
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
-    EarningsCLI(EarningsGRUModel, EarningsDataModule)
-    print('HELLO WORLD!')
+    mlflow.pytorch.autolog()
+    with mlflow.start_run() as run:
+        EarningsCLI(EarningsGRUModel, EarningsDataModule)

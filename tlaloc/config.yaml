@@ -1,21 +1,29 @@
+seed_everything: true
 trainer:
-  gpus: 1
-  default_root_dir: ../outputs
-  checkpoint_callback: true
+  enable_checkpointing: true
   callbacks:
-    - class_path: pytorch_lightning.callbacks.ModelCheckpoint
-      init_args:
-        monitor: val_loss
-        filename: tlaloc-{epoch:02d}-{val_dev:.4f}
-        save_top_k: 5
-        mode: min
-    - class_path: pytorch_lightning.callbacks.EarlyStopping
-      init_args:
-        monitor: val_loss
-        min_delta: 0
-        patience: 25
-        verbose: false
-        mode: min
+  - class_path: pytorch_lightning.callbacks.EarlyStopping
+    init_args:
+      monitor: val_loss
+      min_delta: 0.0001
+      patience: 5
+      verbose: True
+      mode: min
+  - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+    init_args:
+      monitor: val_dev
+      dirpath: outputs/checkpoints
+      filename: roshambo-{epoch:02d}-{val_dev:.2f}
+      save_top_k: 3
+      mode: min
+  - class_path: pytorch_lightning.callbacks.LearningRateMonitor
+    init_args:
+      logging_interval: 'step'
+  default_root_dir: outputs
+  auto_select_gpus: true
+  gpus: 1
+  max_epochs: 100
+  logger: true
 model:
   input_dim: 1
   hidden_dim: 32

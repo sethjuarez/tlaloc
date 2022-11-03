@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "trainer.py",
             "cwd": "${workspaceFolder}/tlaloc",
-            "args": ["--config", "config.yaml"],
+            "args": ["fit", "-c", "config.yaml"],
             "console": "integratedTerminal"
         }
     ]

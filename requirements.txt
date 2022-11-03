@@ -1,0 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cu116
+plotly
+nbformat
+pyarrow
+torch
+torchvision
+torchaudio
+mlflow
+jsonargparse[signatures]
+pytorch-lightning[extra]
+ipykernel
+onnxruntime-gpu
+inference-schema
