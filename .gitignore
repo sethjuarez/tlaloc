@@ -8,3 +8,4 @@ logs/
 keys/
 run/
 .venv/
+.ipynb_checkpoints/
